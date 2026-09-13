@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>حاسبة القرض</title>
+  <title>حاسبة الحد الأقصى للقرض الشخصي</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: Arial, Tahoma, sans-serif;
@@ -30,17 +28,19 @@
       text-align: center;
       margin-top: 0;
       color: #1f4e79;
-      font-size: 28px;
+      font-size: 26px;
     }
     .description {
       text-align: center;
       color: #666;
       margin-bottom: 25px;
+      font-size: 14px;
     }
     label {
       display: block;
       margin-bottom: 8px;
       font-weight: bold;
+      font-size: 14px;
     }
     input {
       width: 100%;
@@ -80,6 +80,7 @@
       margin-top: 0;
       text-align: center;
       color: #1f4e79;
+      font-size: 20px;
     }
     .result-row {
       display: flex;
@@ -98,19 +99,12 @@
       text-align: center;
       margin-top: 20px;
       color: #777;
-      font-size: 13px;
+      font-size: 12px;
     }
     @media (max-width: 600px) {
-      .container {
-        margin: 10px auto;
-        padding: 10px;
-      }
-      .calculator {
-        padding: 20px;
-      }
-      h1 {
-        font-size: 24px;
-      }
+      .container { margin: 10px auto; padding: 10px; }
+      .calculator { padding: 20px; }
+      h1 { font-size: 22px; }
     }
   </style>
 </head>
@@ -118,37 +112,39 @@
 
   <div class="container">
     <div class="calculator">
-      <h1>حاسبة القرض</h1>
-      <p class="description">احسب قيمة القسط الشهري وإجمالي تكلفة القرض</p>
+      <h1>حاسبة الحد الأقصى للقرض</h1>
+      <p class="description">احسب أقصى مبلغ شخصي يمكنك الحصول عليه بناءً على راتبك</p>
 
-      <label for="loanAmount">مبلغ القرض</label>
-      <input type="number" id="loanAmount" placeholder="مثال: 100000" min="0">
+      <label for="salary">الراتب الشهري صافي</label>
+      <input type="number" id="salary" placeholder="مثال: 10000" min="0">
+
+      <label for="existingDeductions">الالتزامات والأقساط الحالية (إن وجدت)</label>
+      <input type="number" id="existingDeductions" placeholder="مثال: 1000" min="0" value="0">
 
       <label for="interestRate">نسبة الفائدة السنوية (%)</label>
       <input type="number" id="interestRate" placeholder="مثال: 5" min="0" step="0.01">
 
-      <label for="loanYears">مدة القرض بالسنوات</label>
+      <label for="loanYears">مدة القرض المرغوبة (بالسنوات)</label>
       <input type="number" id="loanYears" placeholder="مثال: 5" min="1" step="1">
 
-      <button onclick="calculateLoan()">احسب القرض</button>
+      <label for="maxDeductionPercent">أقصى نسبة استقطاع مسموحة (%)</label>
+      <input type="number" id="maxDeductionPercent" value="45" min="1" max="100">
+
+      <button onclick="calculateMaxLoan()">احسب الحد الأقصى</button>
 
       <div class="result" id="result">
-        <h2>النتيجة</h2>
+        <h2>النتيجة التقديرية</h2>
         <div class="result-row">
-          <span>القسط الشهري:</span>
-          <span class="amount" id="monthlyPayment">0</span>
+          <span>أقصى القسط الشهري متاح:</span>
+          <span class="amount" id="maxMonthlyDeduction">0</span>
         </div>
         <div class="result-row">
-          <span>إجمالي المدفوع:</span>
-          <span class="amount" id="totalPayment">0</span>
-        </div>
-        <div class="result-row">
-          <span>إجمالي الفائدة:</span>
-          <span class="amount" id="totalInterest">0</span>
+          <span>الحد الأقصى لمبلغ القرض:</span>
+          <span class="amount" id="maxLoanAmount">0</span>
         </div>
       </div>
 
-      <div class="note">* النتيجة تقديرية وقد تختلف حسب شروط البنك والرسوم.</div>
+      <div class="note">* الحسبة تقديرية وتعتمد على السياسات الائتمانية الدقيقة لكل بنك.</div>
     </div>
   </div>
 
@@ -160,32 +156,39 @@
       }).format(number);
     }
 
-    function calculateLoan() {
-      const loanAmount = parseFloat(document.getElementById("loanAmount").value);
+    function calculateMaxLoan() {
+      const salary = parseFloat(document.getElementById("salary").value);
+      const existingDeductions = parseFloat(document.getElementById("existingDeductions").value) || 0;
       const annualRate = parseFloat(document.getElementById("interestRate").value);
       const years = parseFloat(document.getElementById("loanYears").value);
+      const maxPercent = parseFloat(document.getElementById("maxDeductionPercent").value) / 100;
 
-      if (isNaN(loanAmount) || isNaN(annualRate) || isNaN(years) || loanAmount <= 0 || annualRate < 0 || years <= 0) {
-        alert("يرجى إدخال جميع البيانات بشكل صحيح.");
+      if (isNaN(salary) || isNaN(annualRate) || isNaN(years) || salary <= 0 || annualRate < 0 || years <= 0) {
+        alert("يرجى إدخال الراتب، نسبة الفائدة، ومدة القرض بشكل صحيح.");
+        return;
+      }
+
+      // حساب القسط المتاح
+      const maxAllowedDeductionTotal = salary * maxPercent;
+      const availableMonthlyPayment = maxAllowedDeductionTotal - existingDeductions;
+
+      if (availableMonthlyPayment <= 0) {
+        alert("الالتزامات الحالية تتجاوز أو تساوي أقصى نسبة استقطاع مسموحة.");
         return;
       }
 
       const numberOfPayments = years * 12;
       const monthlyRate = annualRate / 100 / 12;
-      let monthlyPayment;
+      let maxLoan;
 
       if (monthlyRate === 0) {
-        monthlyPayment = loanAmount / numberOfPayments;
+        maxLoan = availableMonthlyPayment * numberOfPayments;
       } else {
-        monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+        maxLoan = availableMonthlyPayment * (Math.pow(1 + monthlyRate, numberOfPayments) - 1) / (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments));
       }
 
-      const totalPayment = monthlyPayment * numberOfPayments;
-      const totalInterest = totalPayment - loanAmount;
-
-      document.getElementById("monthlyPayment").textContent = formatNumber(monthlyPayment);
-      document.getElementById("totalPayment").textContent = formatNumber(totalPayment);
-      document.getElementById("totalInterest").textContent = formatNumber(totalInterest);
+      document.getElementById("maxMonthlyDeduction").textContent = formatNumber(availableMonthlyPayment);
+      document.getElementById("maxLoanAmount").textContent = formatNumber(maxLoan);
 
       document.getElementById("result").style.display = "block";
     }
