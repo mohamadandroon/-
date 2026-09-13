@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>حاسبة الحد الأقصى للقرض</title>
+  <title>حاسبة أقصى مبلغ للقرض الشخصي</title>
 
   <style>
     * {
@@ -145,10 +145,10 @@
       <h1>حاسبة أقصى مبلغ للقرض</h1>
 
       <p class="description">
-        احسب أقصى مبلغ تمويل شخصي يمكنك الحصول عليه بناءً على الراتب
+        احسب أقصى مبلغ استحقاق للقرض الشخصي بناءً على راتبك
       </p>
 
-      <label for="salary">الراتب الشهري الصافي</label>
+      <label for="salary">الراتب الشهري (بالريال/العملة)</label>
       <input
         type="number"
         id="salary"
@@ -156,35 +156,35 @@
         min="0"
       >
 
-      <label for="existingDeductions">الالتزامات والأقساط الحالية (إن وجدت)</label>
+      <label for="multiplier">مضاعف الراتب (عدد الأجور المسموحة عادة 18 إلى 22 راتب)</label>
       <input
         type="number"
-        id="existingDeductions"
-        placeholder="مثال: 0"
-        min="0"
-        value="0"
+        id="multiplier"
+        placeholder="مثال: 18"
+        value="18"
+        min="1"
       >
 
-      <label for="interestRate">نسبة الفائدة السنوية (%)</label>
+      <label for="deductions">إجمالي القروض/الالتزامات الحالية (إن وجدت)</label>
       <input
         type="number"
-        id="interestRate"
-        placeholder="مثال: 5"
+        id="deductions"
+        placeholder="مثال: 0"
+        value="0"
         min="0"
+      >
+
+      <label for="maxDeductionRatio">أقصى نسبة استقطاع شهري مسموحة (%)</label>
+      <input
+        type="number"
+        id="maxDeductionRatio"
+        placeholder="مثال: 33.33"
+        value="33.33"
         step="0.01"
       >
 
-      <label for="loanYears">مدة القرض بالسنوات</label>
-      <input
-        type="number"
-        id="loanYears"
-        placeholder="مثال: 5"
-        min="1"
-        step="1"
-      >
-
       <button onclick="calculateMaxLoan()">
-        احسب الحد الأقصى
+        احسب الحد الأقصى للقرض
       </button>
 
       <div class="result" id="result">
@@ -192,19 +192,19 @@
         <h2>النتيجة التقديرية</h2>
 
         <div class="result-row">
-          <span>أقصى قسط شهري متاح (45%):</span>
+          <span>أقصى قسط شهري مسموح:</span>
           <span class="amount" id="maxMonthlyDeduction">0</span>
         </div>
 
         <div class="result-row">
-          <span>الحد الأقصى القابل للتمويل:</span>
+          <span>الحد الأقصى التقديري للقرض:</span>
           <span class="amount" id="maxLoanAmount">0</span>
         </div>
 
       </div>
 
       <div class="note">
-        * النتيجة تقديرية وقد تختلف حسب شروط البنك والرسوم.
+        * هذه الحسبة تقريبية وتعتمد على السياسة الائتمانية الرسمية لدى البنك.
       </div>
 
     </div>
@@ -215,7 +215,7 @@
 
     function formatNumber(number) {
       return new Intl.NumberFormat('ar-SA', {
-        minimumFractionDigits: 2,
+        minimumFractionDigits: 0,
         maximumFractionDigits: 2
       }).format(number);
     }
@@ -223,42 +223,26 @@
     function calculateMaxLoan() {
 
       const salary = parseFloat(document.getElementById("salary").value);
-      const existingDeductions = parseFloat(document.getElementById("existingDeductions").value) || 0;
-      const annualRate = parseFloat(document.getElementById("interestRate").value);
-      const years = parseFloat(document.getElementById("loanYears").value);
+      const multiplier = parseFloat(document.getElementById("multiplier").value) || 18;
+      const deductions = parseFloat(document.getElementById("deductions").value) || 0;
+      const maxDeductionRatio = parseFloat(document.getElementById("maxDeductionRatio").value) || 33.33;
 
-      if (
-        isNaN(salary) ||
-        isNaN(annualRate) ||
-        isNaN(years) ||
-        salary <= 0 ||
-        annualRate < 0 ||
-        years <= 0
-      ) {
-        alert("يرجى إدخال جميع البيانات بشكل صحيح.");
+      if (isNaN(salary) || salary <= 0) {
+        alert("يرجى إدخال الراتب بشكل صحيح.");
         return;
       }
 
-      // حساب أقصى قسط مسموح (45% من الراتب ناقص الالتزامات)
-      const maxAllowedDeductionTotal = salary * 0.45;
-      const availableMonthlyPayment = maxAllowedDeductionTotal - existingDeductions;
+      // حساب القسط الشهري الأقصى المسموح (الراتب * نسبة الاستقطاع)
+      const maxMonthlyPayment = (salary * (maxDeductionRatio / 100));
 
-      if (availableMonthlyPayment <= 0) {
-        alert("الالتزامات الحالية تتجاوز أو تساوي أقصى نسبة استقطاع مسموحة (45%).");
-        return;
+      // حساب الحد الأقصى للمبلغ (الراتب * مضاعف الراتب - التزامات حالية)
+      let maxLoan = (salary * multiplier) - deductions;
+
+      if (maxLoan < 0) {
+        maxLoan = 0;
       }
 
-      const numberOfPayments = years * 12;
-      const monthlyRate = annualRate / 100 / 12;
-      let maxLoan;
-
-      if (monthlyRate === 0) {
-        maxLoan = availableMonthlyPayment * numberOfPayments;
-      } else {
-        maxLoan = availableMonthlyPayment * (Math.pow(1 + monthlyRate, numberOfPayments) - 1) / (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments));
-      }
-
-      document.getElementById("maxMonthlyDeduction").textContent = formatNumber(availableMonthlyPayment);
+      document.getElementById("maxMonthlyDeduction").textContent = formatNumber(maxMonthlyPayment);
       document.getElementById("maxLoanAmount").textContent = formatNumber(maxLoan);
 
       document.getElementById("result").style.display = "block";
