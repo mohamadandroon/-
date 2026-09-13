@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>حاسبة القرض</title>
+  <title>حاسبة أقصى مبلغ للقرض الشخصي</title>
 
   <style>
     * {
@@ -36,7 +35,7 @@
       text-align: center;
       margin-top: 0;
       color: #1f4e79;
-      font-size: 28px;
+      font-size: 26px;
     }
 
     .description {
@@ -45,13 +44,21 @@
       margin-bottom: 25px;
     }
 
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+    }
+
     label {
       display: block;
       margin-bottom: 8px;
       font-weight: bold;
     }
 
-    input {
+    input, select {
       width: 100%;
       padding: 14px;
       margin-bottom: 18px;
@@ -59,240 +66,12 @@
       border-radius: 10px;
       font-size: 16px;
       direction: rtl;
+      background: white;
     }
 
-    input:focus {
+    input:focus, select:focus {
       outline: none;
       border-color: #1f4e79;
     }
 
-    button {
-      width: 100%;
-      padding: 15px;
-      border: none;
-      border-radius: 10px;
-      background: #1f4e79;
-      color: white;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #163a5c;
-    }
-
-    .result {
-      display: none;
-      margin-top: 25px;
-      padding: 20px;
-      background: #eef6ff;
-      border-radius: 12px;
-    }
-
-    .result h2 {
-      margin-top: 0;
-      text-align: center;
-      color: #1f4e79;
-    }
-
-    .result-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px solid #d8e5f2;
-    }
-
-    .result-row:last-child {
-      border-bottom: none;
-    }
-
-    .amount {
-      font-weight: bold;
-      color: #1f4e79;
-    }
-
-    .note {
-      text-align: center;
-      margin-top: 20px;
-      color: #777;
-      font-size: 13px;
-    }
-
-    @media (max-width: 600px) {
-      .container {
-        margin: 10px auto;
-        padding: 10px;
-      }
-
-      .calculator {
-        padding: 20px;
-      }
-
-      h1 {
-        font-size: 24px;
-      }
-    }
-  </style>
-</head>
-
-<body>
-
-  <div class="container">
-
-    <div class="calculator">
-
-      <h1>حاسبة القرض</h1>
-
-      <p class="description">
-        احسب قيمة القسط الشهري وإجمالي تكلفة القرض
-      </p>
-
-      <label for="loanAmount">مبلغ القرض</label>
-      <input
-        type="number"
-        id="loanAmount"
-        placeholder="مثال: 100000"
-        min="0"
-      >
-
-      <label for="interestRate">نسبة الفائدة السنوية (%)</label>
-      <input
-        type="number"
-        id="interestRate"
-        placeholder="مثال: 5"
-        min="0"
-        step="0.01"
-      >
-
-      <label for="loanYears">مدة القرض بالسنوات</label>
-      <input
-        type="number"
-        id="loanYears"
-        placeholder="مثال: 5"
-        min="1"
-        step="1"
-      >
-
-      <button onclick="calculateLoan()">
-        احسب القرض
-      </button>
-
-      <div class="result" id="result">
-
-        <h2>النتيجة</h2>
-
-        <div class="result-row">
-          <span>القسط الشهري:</span>
-          <span class="amount" id="monthlyPayment">0</span>
-        </div>
-
-        <div class="result-row">
-          <span>إجمالي المدفوع:</span>
-          <span class="amount" id="totalPayment">0</span>
-        </div>
-
-        <div class="result-row">
-          <span>إجمالي الفائدة:</span>
-          <span class="amount" id="totalInterest">0</span>
-        </div>
-
-      </div>
-
-      <div class="note">
-        * النتيجة تقديرية وقد تختلف حسب شروط البنك والرسوم.
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <script>
-
-    function formatNumber(number) {
-      return new Intl.NumberFormat('ar-SA', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(number);
-    }
-
-
-    function calculateLoan() {
-
-      const loanAmount =
-        parseFloat(document.getElementById("loanAmount").value);
-
-      const annualRate =
-        parseFloat(document.getElementById("interestRate").value);
-
-      const years =
-        parseFloat(document.getElementById("loanYears").value);
-
-
-      if (
-        isNaN(loanAmount) ||
-        isNaN(annualRate) ||
-        isNaN(years) ||
-        loanAmount <= 0 ||
-        annualRate < 0 ||
-        years <= 0
-      ) {
-        alert("يرجى إدخال جميع البيانات بشكل صحيح.");
-        return;
-      }
-
-
-      const numberOfPayments = years * 12;
-
-      const monthlyRate = annualRate / 100 / 12;
-
-
-      let monthlyPayment;
-
-
-      if (monthlyRate === 0) {
-
-        monthlyPayment =
-          loanAmount / numberOfPayments;
-
-      } else {
-
-        monthlyPayment =
-          loanAmount *
-          (
-            monthlyRate *
-            Math.pow(1 + monthlyRate, numberOfPayments)
-          )
-          /
-          (
-            Math.pow(1 + monthlyRate, numberOfPayments) - 1
-          );
-
-      }
-
-
-      const totalPayment =
-        monthlyPayment * numberOfPayments;
-
-      const totalInterest =
-        totalPayment - loanAmount;
-
-
-      document.getElementById("monthlyPayment").textContent =
-        formatNumber(monthlyPayment);
-
-      document.getElementById("totalPayment").textContent =
-        formatNumber(totalPayment);
-
-      document.getElementById("totalInterest").textContent =
-        formatNumber(totalInterest);
-
-
-      document.getElementById("result").style.display = "block";
-    }
-
-  </script>
-
-</body>
-</html>
+    .radio-group {
