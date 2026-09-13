@@ -3,45 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>حاسبة الحد الأقصى للقرض الشخصي</title>
+
+  <title>حاسبة الحد الأقصى للقرض</title>
+
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: Arial, Tahoma, sans-serif;
       background: #f2f5f9;
       color: #222;
     }
+
     .container {
       width: 100%;
       max-width: 500px;
       margin: 30px auto;
       padding: 15px;
     }
+
     .calculator {
       background: white;
       border-radius: 20px;
       padding: 25px;
       box-shadow: 0 5px 25px rgba(0,0,0,0.08);
     }
+
     h1 {
       text-align: center;
       margin-top: 0;
       color: #1f4e79;
-      font-size: 26px;
+      font-size: 28px;
     }
+
     .description {
       text-align: center;
       color: #666;
       margin-bottom: 25px;
-      font-size: 14px;
     }
+
     label {
       display: block;
       margin-bottom: 8px;
       font-weight: bold;
-      font-size: 14px;
     }
+
     input {
       width: 100%;
       padding: 14px;
@@ -51,10 +60,12 @@
       font-size: 16px;
       direction: rtl;
     }
+
     input:focus {
       outline: none;
       border-color: #1f4e79;
     }
+
     button {
       width: 100%;
       padding: 15px;
@@ -66,9 +77,11 @@
       font-weight: bold;
       cursor: pointer;
     }
+
     button:hover {
       background: #163a5c;
     }
+
     .result {
       display: none;
       margin-top: 25px;
@@ -76,79 +89,130 @@
       background: #eef6ff;
       border-radius: 12px;
     }
+
     .result h2 {
       margin-top: 0;
       text-align: center;
       color: #1f4e79;
-      font-size: 20px;
     }
+
     .result-row {
       display: flex;
       justify-content: space-between;
       padding: 12px 0;
       border-bottom: 1px solid #d8e5f2;
     }
+
     .result-row:last-child {
       border-bottom: none;
     }
+
     .amount {
       font-weight: bold;
       color: #1f4e79;
     }
+
     .note {
       text-align: center;
       margin-top: 20px;
       color: #777;
-      font-size: 12px;
+      font-size: 13px;
     }
+
     @media (max-width: 600px) {
-      .container { margin: 10px auto; padding: 10px; }
-      .calculator { padding: 20px; }
-      h1 { font-size: 22px; }
+      .container {
+        margin: 10px auto;
+        padding: 10px;
+      }
+
+      .calculator {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <div class="container">
-    <div class="calculator">
-      <h1>حاسبة الحد الأقصى للقرض</h1>
-      <p class="description">احسب أقصى مبلغ شخصي يمكنك الحصول عليه بناءً على راتبك</p>
 
-      <label for="salary">الراتب الشهري صافي</label>
-      <input type="number" id="salary" placeholder="مثال: 10000" min="0">
+    <div class="calculator">
+
+      <h1>حاسبة أقصى مبلغ للقرض</h1>
+
+      <p class="description">
+        احسب أقصى مبلغ تمويل شخصي يمكنك الحصول عليه بناءً على الراتب
+      </p>
+
+      <label for="salary">الراتب الشهري الصافي</label>
+      <input
+        type="number"
+        id="salary"
+        placeholder="مثال: 10000"
+        min="0"
+      >
 
       <label for="existingDeductions">الالتزامات والأقساط الحالية (إن وجدت)</label>
-      <input type="number" id="existingDeductions" placeholder="مثال: 1000" min="0" value="0">
+      <input
+        type="number"
+        id="existingDeductions"
+        placeholder="مثال: 0"
+        min="0"
+        value="0"
+      >
 
       <label for="interestRate">نسبة الفائدة السنوية (%)</label>
-      <input type="number" id="interestRate" placeholder="مثال: 5" min="0" step="0.01">
+      <input
+        type="number"
+        id="interestRate"
+        placeholder="مثال: 5"
+        min="0"
+        step="0.01"
+      >
 
-      <label for="loanYears">مدة القرض المرغوبة (بالسنوات)</label>
-      <input type="number" id="loanYears" placeholder="مثال: 5" min="1" step="1">
+      <label for="loanYears">مدة القرض بالسنوات</label>
+      <input
+        type="number"
+        id="loanYears"
+        placeholder="مثال: 5"
+        min="1"
+        step="1"
+      >
 
-      <label for="maxDeductionPercent">أقصى نسبة استقطاع مسموحة (%)</label>
-      <input type="number" id="maxDeductionPercent" value="45" min="1" max="100">
-
-      <button onclick="calculateMaxLoan()">احسب الحد الأقصى</button>
+      <button onclick="calculateMaxLoan()">
+        احسب الحد الأقصى
+      </button>
 
       <div class="result" id="result">
+
         <h2>النتيجة التقديرية</h2>
+
         <div class="result-row">
-          <span>أقصى القسط الشهري متاح:</span>
+          <span>أقصى قسط شهري متاح (45%):</span>
           <span class="amount" id="maxMonthlyDeduction">0</span>
         </div>
+
         <div class="result-row">
-          <span>الحد الأقصى لمبلغ القرض:</span>
+          <span>الحد الأقصى القابل للتمويل:</span>
           <span class="amount" id="maxLoanAmount">0</span>
         </div>
+
       </div>
 
-      <div class="note">* الحسبة تقديرية وتعتمد على السياسات الائتمانية الدقيقة لكل بنك.</div>
+      <div class="note">
+        * النتيجة تقديرية وقد تختلف حسب شروط البنك والرسوم.
+      </div>
+
     </div>
+
   </div>
 
   <script>
+
     function formatNumber(number) {
       return new Intl.NumberFormat('ar-SA', {
         minimumFractionDigits: 2,
@@ -157,23 +221,30 @@
     }
 
     function calculateMaxLoan() {
+
       const salary = parseFloat(document.getElementById("salary").value);
       const existingDeductions = parseFloat(document.getElementById("existingDeductions").value) || 0;
       const annualRate = parseFloat(document.getElementById("interestRate").value);
       const years = parseFloat(document.getElementById("loanYears").value);
-      const maxPercent = parseFloat(document.getElementById("maxDeductionPercent").value) / 100;
 
-      if (isNaN(salary) || isNaN(annualRate) || isNaN(years) || salary <= 0 || annualRate < 0 || years <= 0) {
-        alert("يرجى إدخال الراتب، نسبة الفائدة، ومدة القرض بشكل صحيح.");
+      if (
+        isNaN(salary) ||
+        isNaN(annualRate) ||
+        isNaN(years) ||
+        salary <= 0 ||
+        annualRate < 0 ||
+        years <= 0
+      ) {
+        alert("يرجى إدخال جميع البيانات بشكل صحيح.");
         return;
       }
 
-      // حساب القسط المتاح
-      const maxAllowedDeductionTotal = salary * maxPercent;
+      // حساب أقصى قسط مسموح (45% من الراتب ناقص الالتزامات)
+      const maxAllowedDeductionTotal = salary * 0.45;
       const availableMonthlyPayment = maxAllowedDeductionTotal - existingDeductions;
 
       if (availableMonthlyPayment <= 0) {
-        alert("الالتزامات الحالية تتجاوز أو تساوي أقصى نسبة استقطاع مسموحة.");
+        alert("الالتزامات الحالية تتجاوز أو تساوي أقصى نسبة استقطاع مسموحة (45%).");
         return;
       }
 
@@ -192,6 +263,7 @@
 
       document.getElementById("result").style.display = "block";
     }
+
   </script>
 
 </body>
