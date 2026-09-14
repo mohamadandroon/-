@@ -4,214 +4,301 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>حاسبة أقصى مبلغ للقرض الشخصي</title>
+  
+  <!-- خط Google Font الحديث -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 
   <style>
     * {
       box-sizing: border-box;
+      font-family: 'Tajawal', sans-serif;
     }
 
     body {
       margin: 0;
-      font-family: Arial, Tahoma, sans-serif;
-      background: #f2f5f9;
-      color: #222;
+      background: linear-gradient(135deg, #eef2f7 0%, #dce5ef 100%);
+      color: #2c3e50;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
     }
 
     .container {
       width: 100%;
-      max-width: 500px;
-      margin: 30px auto;
-      padding: 15px;
+      max-width: 520px;
     }
 
     .calculator {
-      background: white;
-      border-radius: 20px;
-      padding: 25px;
-      box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 32px 28px;
+      box-shadow: 0 12px 35px rgba(31, 78, 121, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.8);
     }
 
     h1 {
       text-align: center;
-      margin-top: 0;
+      margin: 0 0 6px 0;
       color: #1f4e79;
-      font-size: 26px;
+      font-size: 24px;
+      font-weight: 700;
     }
 
     .description {
       text-align: center;
-      color: #666;
+      color: #7f8c8d;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    /* مؤشر التقدم */
+    .progress-bar {
+      display: flex;
+      justify-content: space-between;
       margin-bottom: 25px;
+      position: relative;
+    }
+
+    .progress-bar::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: #e0e6ed;
+      transform: translateY(-50%);
+      z-index: 1;
+    }
+
+    .progress-step {
+      width: 32px;
+      height: 32px;
+      background: #ffffff;
+      border: 3px solid #e0e6ed;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+      color: #95a5a6;
+      position: relative;
+      z-index: 2;
+      transition: all 0.3s ease;
+    }
+
+    .progress-step.active {
+      border-color: #1f4e79;
+      background: #1f4e79;
+      color: white;
     }
 
     .step {
       display: none;
+      animation: fadeIn 0.4s ease;
     }
 
     .step.active {
       display: block;
     }
 
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     label {
       display: block;
-      margin-bottom: 8px;
-      font-weight: bold;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #34495e;
+      font-size: 15px;
     }
 
     .input-wrapper {
       position: relative;
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
 
     .input-wrapper input {
       margin-bottom: 0;
-      padding-left: 35px;
+      padding-left: 45px;
     }
 
     .currency-symbol {
       position: absolute;
-      left: 14px;
+      left: 16px;
       top: 50%;
       transform: translateY(-50%);
-      color: #777;
+      color: #1f4e79;
       font-weight: bold;
+      font-size: 18px;
       pointer-events: none;
     }
 
-    input, select {
+    input[type="number"] {
       width: 100%;
-      padding: 14px;
-      margin-bottom: 18px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
       font-size: 16px;
       direction: rtl;
-      background: white;
+      background: #f8fafc;
+      transition: all 0.25s ease;
+      color: #2c3e50;
     }
 
-    input:focus, select:focus {
+    input[type="number"]:focus {
       outline: none;
       border-color: #1f4e79;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(31, 78, 121, 0.1);
     }
 
+    /* خيارات الراديو المحسنة */
     .radio-group {
-      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 22px;
     }
 
     .radio-option {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      margin-bottom: 10px;
+      padding: 14px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
       cursor: pointer;
+      background: #f8fafc;
+      transition: all 0.2s ease;
+      font-weight: 500;
     }
 
-    .radio-option input {
-      width: auto;
-      margin: 0;
+    .radio-option:hover {
+      border-color: #cbd5e1;
+      background: #ffffff;
     }
 
+    .radio-option input[type="radio"] {
+      margin-left: 12px;
+      accent-color: #1f4e79;
+      width: 18px;
+      height: 18px;
+    }
+
+    .radio-option.selected {
+      border-color: #1f4e79;
+      background: #f0f6fc;
+      color: #1f4e79;
+      font-weight: bold;
+    }
+
+    /* الأزرار */
     button, .btn-whatsapp {
       width: 100%;
-      padding: 15px;
+      padding: 16px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       background: #1f4e79;
       color: white;
-      font-size: 18px;
-      font-weight: bold;
+      font-size: 16px;
+      font-weight: 700;
       cursor: pointer;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       text-align: center;
       text-decoration: none;
-      display: inline-block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       box-sizing: border-box;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 12px rgba(31, 78, 121, 0.15);
     }
 
     button:hover {
       background: #163a5c;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 15px rgba(31, 78, 121, 0.25);
     }
 
     .btn-whatsapp {
       background: #25d366;
+      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
     }
 
     .btn-whatsapp:hover {
-      background: #1ebc57;
+      background: #20bd5a;
+      box-shadow: 0 6px 15px rgba(37, 211, 102, 0.3);
     }
 
     .btn-secondary {
-      background: #ddd;
-      color: #222;
+      background: #f1f5f9;
+      color: #475569;
+      box-shadow: none;
     }
 
     .btn-secondary:hover {
-      background: #ccc;
+      background: #e2e8f0;
+      box-shadow: none;
     }
 
+    /* النتيجة والرفض */
     .result {
       display: none;
-      margin-top: 25px;
-      padding: 20px;
-      background: #eef6ff;
-      border-radius: 12px;
+      margin-top: 15px;
+      padding: 24px;
+      background: linear-gradient(135deg, #f0f7ff 0%, #e1effe 100%);
+      border-radius: 16px;
+      border: 1px solid #bae6fd;
+      text-align: center;
     }
 
     .result h2 {
       margin-top: 0;
-      text-align: center;
       color: #1f4e79;
+      font-size: 18px;
     }
 
-    .result-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px solid #d8e5f2;
-    }
-
-    .result-row:last-child {
-      border-bottom: none;
-    }
-
-    .amount {
-      font-weight: bold;
+    .amount-box {
+      font-size: 26px;
+      font-weight: 800;
       color: #1f4e79;
-    }
-
-    .note {
-      text-align: center;
-      margin-top: 20px;
-      color: #777;
-      font-size: 13px;
+      margin: 15px 0 20px 0;
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
 
     .rejection {
       display: none;
       text-align: center;
-      padding: 25px;
-      background: #fdecea;
-      border-radius: 12px;
-      color: #a33;
-      font-weight: bold;
+      padding: 24px;
+      background: #fef2f2;
+      border-radius: 16px;
+      color: #991b1b;
+      border: 1px solid #fecaca;
     }
 
-    @media (max-width: 600px) {
-      .container {
-        margin: 10px auto;
-        padding: 10px;
-      }
+    .rejection p {
+      margin-top: 0;
+      margin-bottom: 18px;
+      font-weight: 600;
+      line-height: 1.5;
+    }
 
-      .calculator {
-        padding: 20px;
-      }
-
-      h1 {
-        font-size: 22px;
-      }
+    .note {
+      text-align: center;
+      margin-top: 20px;
+      color: #94a3b8;
+      font-size: 12px;
+      line-height: 1.4;
     }
   </style>
 </head>
@@ -222,11 +309,17 @@
     <div class="calculator">
 
       <h1>حاسبة أقصى مبلغ للقرض</h1>
-      <p class="description">
-        احسب أقصى مبلغ تقديري لقرض شخصي بناءً على وضعك الإقامي ودخلك
-      </p>
+      <p class="description">تقدير أقصى مبلغ للقرض الشخصي في ألمانيا بخطوات بسيطة</p>
 
-      <!-- الخطوة الأولى: الإقامة -->
+      <!-- مؤشر الخريطة -->
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-step active" id="p1">1</div>
+        <div class="progress-step" id="pContract">2</div>
+        <div class="progress-step" id="p2">3</div>
+        <div class="progress-step" id="p3">4</div>
+      </div>
+
+      <!-- الخطوة 1: الإقامة -->
       <div class="step active" id="step1">
         <label>ما هو وضعك القانوني في ألمانيا؟</label>
 
@@ -273,12 +366,16 @@
 
       <!-- رسالة الرفض -->
       <div class="rejection" id="rejectionMessage">
-        عذراً، بناءً على الشروط الحالية لا يمكن حساب الحد الأقصى للقرض. يرجى مراجعة البنك مباشرة لمزيد من التفاصيل.
-        <br><br>
+        <p>عذراً، بناءً على الشروط المعيارية الحالية لا يمكن حساب مبلغ للقرض.</p>
+        
+        <a id="rejectionWhatsappBtn" href="#" target="_blank" class="btn-whatsapp">
+          التواصل عبر واتساب لمعرفة السبب ودراسة الحالة
+        </a>
+        
         <button class="btn-secondary" onclick="restart()">البدء من جديد</button>
       </div>
 
-      <!-- الخطوة الثانية: الحالة الاجتماعية وعدد مقدمي الطلب -->
+      <!-- الخطوة 2: الحالة الاجتماعية -->
       <div class="step" id="step2">
         <label>الحالة الاجتماعية</label>
         <div class="radio-group">
@@ -310,7 +407,7 @@
         <button class="btn-secondary" onclick="goToStep('Contract')">رجوع</button>
       </div>
 
-      <!-- الخطوة الثالثة: البيانات المالية -->
+      <!-- الخطوة 3: البيانات المالية -->
       <div class="step" id="step3">
 
         <label for="incomeMale">صافي الدخل الشهري (الراتب من صاحب العمل)</label>
@@ -342,34 +439,57 @@
 
       <!-- النتيجة -->
       <div class="result" id="result">
+        <h2>النتيجة التقديرية للقرض</h2>
 
-        <h2>النتيجة التقديرية</h2>
+        <div class="amount-box" id="maxLoanRange">0</div>
 
-        <div class="result-row" style="justify-content:center; border-bottom:none;">
-          <span class="amount" id="maxLoanRange" style="font-size:24px;">0</span>
-        </div>
-
-        <!-- زر الواتساب للإستشارة -->
         <a id="whatsappBtn" href="#" target="_blank" class="btn-whatsapp">
-          إرسال رسالة على واتساب لتحديد استشارة مع محمد اندرون
+          إرسال التفاصيل على واتساب لتحديد استشارة
         </a>
 
-        <!-- زر التعديل السريع -->
         <button class="btn-secondary" onclick="goToStep(3)">تعديل البيانات</button>
         <button class="btn-secondary" style="background:none; border:none; color:#777; font-weight:normal;" onclick="restart()">البدء من جديد</button>
       </div>
 
       <div class="note">
-        * هذه الحسبة تقريبية فقط ولا تعتبر عرضاً رسمياً أو ضماناً للحصول على القرض. القرار النهائي يعود دائماً للبنك.
+        * هذه الحسبة تقريبية ولا تعتبر عرضاً رسمياً. القرار النهائي يعود دائماً للبنك.
       </div>
 
     </div>
   </div>
 
   <script>
+    // إضافة تظليل تلقائي للخيارات المختارة لتأثير visual أجمّل
+    document.querySelectorAll('.radio-option input').forEach(input => {
+      input.addEventListener('change', function() {
+        let name = this.name;
+        document.querySelectorAll(`input[name="${name}"]`).forEach(el => {
+          el.parentElement.classList.remove('selected');
+        });
+        if(this.checked) {
+          this.parentElement.classList.add('selected');
+        }
+      });
+    });
 
     function formatPlainNumber(number) {
       return Math.round(number).toString();
+    }
+
+    function updateProgress(stepIdentifier) {
+      const pSteps = ['1', 'Contract', '2', '3'];
+      let currentIndex = pSteps.indexOf(stepIdentifier.toString());
+      
+      pSteps.forEach((id, index) => {
+        let el = document.getElementById('p' + id);
+        if(el) {
+          if(index <= currentIndex) {
+            el.classList.add('active');
+          } else {
+            el.classList.remove('active');
+          }
+        }
+      });
     }
 
     function goToStep(stepIdentifier) {
@@ -379,45 +499,72 @@
       document.getElementById('rejectionMessage').style.display = 'none';
       document.getElementById('result').style.display = 'none';
       document.getElementById('step' + stepIdentifier).classList.add('active');
+      updateProgress(stepIdentifier);
     }
 
-    function rejectLoan() {
+    function rejectLoan(reasonText) {
       document.querySelectorAll('.step').forEach(function (el) {
         el.classList.remove('active');
       });
       document.getElementById('result').style.display = 'none';
+      
+      const phone = "4915565150411";
+      const residenceText = document.querySelector('input[name="residenceStatus"]:checked')?.parentElement.textContent.trim() || "غير محدد";
+      const contractText = document.querySelector('input[name="contractStatus"]:checked')?.parentElement.textContent.trim() || "غير محدد";
+      const maritalStatus = document.querySelector('input[name="maritalStatus"]:checked')?.value;
+      const maritalText = (maritalStatus === "married") ? "متزوج" : "أعزب";
+      const applicantSelect = document.querySelector('input[name="applicantCount"]:checked');
+      const applicantText = (maritalStatus === "married" && applicantSelect) ? (applicantSelect.value === "two" ? "شخصين" : "شخص واحد") : "شخص واحد";
+
+      const incomeMale = document.getElementById("incomeMale").value || "غير مدخل";
+      const incomeFemale = document.getElementById("incomeFemale").value || "0";
+      const childrenCount = document.getElementById("childrenCount").value || "0";
+      const rent = document.getElementById("rent").value || "غير مدخل";
+
+      let rawMessage = `مرحباً أستاذ محمد اندرون، قمت بحساب مبلغ القرض وتم رفض الطلب تلقائياً بناءً على الحسبة.\n\n` +
+        `سبب الرفض التقديري: ${reasonText}\n\n` +
+        `البيانات المدخلة:\n` +
+        `- الإقامة: ${residenceText}\n` +
+        `- عقد العمل: ${contractText}\n` +
+        `- الحالة الاجتماعية: ${maritalText}\n` +
+        `- عدد المتقدمين: ${applicantText}\n` +
+        `- دخل الزوج: ${incomeMale}€\n`;
+
+      if (maritalStatus === "married" && applicantSelect?.value === "two") {
+        rawMessage += `- دخل الزوجة: ${incomeFemale}€\n`;
+      }
+
+      rawMessage += `- عدد الأطفال: ${childrenCount}\n` +
+        `- الإيجار الشهري: ${rent}€\n\n` +
+        `أود الاستفسار عن سبب الرفض وإمكانية دراسة الحالة لاستثناء بنكي.`;
+
+      document.getElementById("rejectionWhatsappBtn").href = `https://wa.me/${phone}?text=${encodeURIComponent(rawMessage)}`;
       document.getElementById('rejectionMessage').style.display = 'block';
     }
 
     function checkResidence() {
       const selected = document.querySelector('input[name="residenceStatus"]:checked');
-
       if (!selected) {
         alert("يرجى اختيار وضعك القانوني في ألمانيا.");
         return;
       }
-
-      const status = selected.value;
-
-      if (status === "citizen" || status === "permanent") {
+      if (selected.value === "citizen" || selected.value === "permanent") {
         goToStep('Contract');
       } else {
-        rejectLoan();
+        rejectLoan("نوع الإقامة مؤقتة أو غير دائمة");
       }
     }
 
     function checkContract() {
       const selected = document.querySelector('input[name="contractStatus"]:checked');
-
       if (!selected) {
         alert("يرجى تحديد نوع عقد العمل.");
         return;
       }
-
       if (selected.value === "permanent") {
         goToStep(2);
       } else {
-        rejectLoan();
+        rejectLoan("عقد العمل مؤقت / في فترة التجربة");
       }
     }
 
@@ -435,7 +582,6 @@
 
     function goToStep3() {
       const maritalStatus = document.querySelector('input[name="maritalStatus"]:checked');
-
       if (!maritalStatus) {
         alert("يرجى اختيار الحالة الاجتماعية.");
         return;
@@ -463,6 +609,7 @@
     function restart() {
       document.querySelectorAll('input[type=radio]').forEach(function (el) {
         el.checked = false;
+        el.parentElement.classList.remove('selected');
       });
       document.getElementById('incomeMale').value = '';
       document.getElementById('incomeFemale').value = '';
@@ -494,19 +641,18 @@
         return;
       }
 
-      // شرط الراتب الأدنى: يجب أن يكون راتب أحد المتقدمين 1800 يورو أو أكثر
+      // شرط الراتب الأدنى
       const hasMinimumSingleIncome = (incomeMale >= 1800) || (applicantType === "two" && incomeFemale >= 1800);
-
       if (!hasMinimumSingleIncome) {
-        rejectLoan();
+        rejectLoan("صافي الدخل لأحد المتقدمين أقل من الحد الأدنى (1800 يورو)");
         return;
       }
 
       const totalIncome = incomeMale + incomeFemale;
 
-      // شرط الإيجار: إذا كان الإيجار يتجاوز 40% من صافي الدخل الإجمالي يُرفض الطلب
+      // شرط الإيجار (أقل من 40%)
       if (rent > (totalIncome * 0.40)) {
-        rejectLoan();
+        rejectLoan("قيمة الإيجار تزيد عن 40% من صافي الدخل الإجمالي");
         return;
       }
 
@@ -516,24 +662,21 @@
       const spouseAllowance = (maritalStatus === "married") ? 200 : 0;
 
       const totalDeductions = fixedAllowance + carAllowance + childAllowance + rent + spouseAllowance;
-
       let freeAmount = totalIncome - totalDeductions;
 
-      // تطبيق حد نسبة الدين إلى الدخل (DTI Limit): لا يتجاوز القسط 40% من الدخل
-      const maxMonthlyPaymentAllowed = totalIncome * 0.40;
+      // حد الدين إلى الدخل (25%)
+      const maxMonthlyPaymentAllowed = totalIncome * 0.25;
       if (freeAmount > maxMonthlyPaymentAllowed) {
         freeAmount = maxMonthlyPaymentAllowed;
       }
 
-      // شرط المتبقي: أقل من 100 يورو يؤدي للرفض
       if (freeAmount < 100) {
-        rejectLoan();
+        rejectLoan("المبلغ المتبقي المعيشي بعد الاقتطاعات والإيجار غير كافٍ (أقل من 100 يورو)");
         return;
       }
 
       const years = totalIncome < 3000 ? 8 : 10;
       const months = years * 12;
-
       const annualRate = 9;
       const monthlyRate = annualRate / 100 / 12;
 
@@ -561,12 +704,12 @@
 
       document.getElementById("maxLoanRange").textContent = resultText;
 
-      // صياغة رسالة الواتساب شاملة لكافة البيانات
       const phone = "4915565150411";
       const maritalText = (maritalStatus === "married") ? "متزوج" : "أعزب";
       const applicantText = (applicantType === "two") ? "شخصين (مشارك)" : "شخص واحد";
       
-      let rawMessage = `مرحباً أستاذ محمد اندرون، قمت بحساب مبلغ القرض عبر الحاسبة وكانت البيانات كالتالي:\n\n` +
+      let rawMessage = `مرحباً أستاذ محمد اندرون، قمت بحساب مبلغ القرض عبر الحاسبة وكانت النتيجة التقديرية (${resultText}).\n\n` +
+        `البيانات المدخلة:\n` +
         `- الإقامة: ${residenceText}\n` +
         `- عقد العمل: دائم\n` +
         `- الحالة الاجتماعية: ${maritalText}\n` +
@@ -578,16 +721,12 @@
       }
       
       rawMessage += `- عدد الأطفال: ${childrenCount}\n` +
-        `- الإيجار الشهري: ${rent}€\n` +
-        `- النتيجة التقديرية للقرض: (${resultText})\n\n` +
+        `- الإيجار الشهري: ${rent}€\n\n` +
         `أود تحديد موعد استشارة معكم.`;
 
-      const encodedMessage = encodeURIComponent(rawMessage);
-      document.getElementById("whatsappBtn").href = `https://wa.me/${phone}?text=${encodedMessage}`;
-
+      document.getElementById("whatsappBtn").href = `https://wa.me/${phone}?text=${encodeURIComponent(rawMessage)}`;
       document.getElementById("result").style.display = "block";
     }
-
   </script>
 
 </body>
