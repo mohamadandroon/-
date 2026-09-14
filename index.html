@@ -258,19 +258,32 @@
         <button class="btn-secondary" onclick="restart()">البدء من جديد</button>
       </div>
 
-      <!-- الخطوة الثانية: عدد مقدمي الطلب -->
+      <!-- الخطوة الثانية: الحالة الاجتماعية وعدد مقدمي الطلب -->
       <div class="step" id="step2">
-        <label>هل الطلب باسم شخص واحد أم شخصين؟</label>
-
+        <label>الحالة الاجتماعية</label>
         <div class="radio-group">
           <label class="radio-option">
-            <input type="radio" name="applicantCount" value="one">
-            شخص واحد فقط (الزوجة لا تعمل أو غير مشمولة)
+            <input type="radio" name="maritalStatus" value="single" onchange="toggleApplicantOptions()">
+            أعزب / عازب
           </label>
           <label class="radio-option">
-            <input type="radio" name="applicantCount" value="two">
-            شخصين (الزوجة تعمل وتشارك في الطلب)
+            <input type="radio" name="maritalStatus" value="married" onchange="toggleApplicantOptions()">
+            متزوج / متزوجة
           </label>
+        </div>
+
+        <div id="applicantCountBlock" style="display:none;">
+          <label>هل الطلب باسم شخص واحد أم شخصين؟</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="applicantCount" value="one">
+              شخص واحد فقط (الزوجة لا تعمل أو غير مشمولة)
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="applicantCount" value="two">
+              شخصين (الزوجة تعمل وتشارك في الطلب)
+            </label>
+          </div>
         </div>
 
         <button onclick="goToStep3()">التالي</button>
@@ -377,16 +390,39 @@
       }
     }
 
-    function goToStep3() {
-      const selected = document.querySelector('input[name="applicantCount"]:checked');
+    function toggleApplicantOptions() {
+      const maritalStatus = document.querySelector('input[name="maritalStatus"]:checked');
+      const applicantBlock = document.getElementById('applicantCountBlock');
+      
+      if (maritalStatus && maritalStatus.value === 'married') {
+        applicantBlock.style.display = 'block';
+      } else {
+        applicantBlock.style.display = 'none';
+        // إلغاء تحديد الخيارات عند التحويل للأعزب
+        document.querySelectorAll('input[name="applicantCount"]').forEach(el => el.checked = false);
+      }
+    }
 
-      if (!selected) {
-        alert("يرجى اختيار عدد مقدمي الطلب.");
+    function goToStep3() {
+      const maritalStatus = document.querySelector('input[name="maritalStatus"]:checked');
+
+      if (!maritalStatus) {
+        alert("يرجى اختيار الحالة الاجتماعية.");
         return;
       }
 
-      if (selected.value === "two") {
-        document.getElementById('femaleIncomeBlock').style.display = 'block';
+      if (maritalStatus.value === "married") {
+        const applicantSelected = document.querySelector('input[name="applicantCount"]:checked');
+        if (!applicantSelected) {
+          alert("يرجى اختيار عدد مقدمي الطلب.");
+          return;
+        }
+
+        if (applicantSelected.value === "two") {
+          document.getElementById('femaleIncomeBlock').style.display = 'block';
+        } else {
+          document.getElementById('femaleIncomeBlock').style.display = 'none';
+        }
       } else {
         document.getElementById('femaleIncomeBlock').style.display = 'none';
       }
@@ -402,6 +438,7 @@
       document.getElementById('incomeFemale').value = '';
       document.getElementById('childrenCount').value = '0';
       document.getElementById('rent').value = '';
+      document.getElementById('applicantCountBlock').style.display = 'none';
       document.getElementById('result').style.display = 'none';
       document.getElementById('rejectionMessage').style.display = 'none';
       goToStep(1);
@@ -409,10 +446,12 @@
 
     function calculateMaxLoan() {
 
-      const applicantType = document.querySelector('input[name="applicantCount"]:checked').value;
+      const maritalStatus = document.querySelector('input[name="maritalStatus"]:checked').value;
+      const applicantSelect = document.querySelector('input[name="applicantCount"]:checked');
+      const applicantType = (maritalStatus === "married" && applicantSelect) ? applicantSelect.value : "one";
 
       const incomeMale = parseFloat(document.getElementById("incomeMale").value) || 0;
-      const incomeFemale = applicantType === "two"
+      const incomeFemale = (maritalStatus === "married" && applicantType === "two")
         ? (parseFloat(document.getElementById("incomeFemale").value) || 0)
         : 0;
 
@@ -435,7 +474,8 @@
       const carAllowance = 250;
       const childAllowance = 50 * childrenCount;
 
-      const spouseAllowance = 250;
+      // الخصم للزوجة يكون 250 يورو فقط إذا كان المتقدم متزوجاً
+      const spouseAllowance = (maritalStatus === "married") ? 250 : 0;
 
       const totalDeductions = fixedAllowance + carAllowance + childAllowance + rent + spouseAllowance;
 
@@ -476,7 +516,7 @@
 
       document.getElementById("maxLoanRange").textContent = resultText;
 
-      // إعداد رابط الواتساب ورسالة مجهزة مسبقاً
+      // إعداد رابط الواتساب
       const phone = "4915565150411";
       const message = encodeURIComponent(`مرحباً أستاذ محمد اندرون، قمت بحساب مبلغ القرض المتوقع عبر الحاسبة وكانت النتيجة التقديرية (${resultText}). أود تحديد موعد استشارة معكم.`);
       
