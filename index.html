@@ -220,9 +220,28 @@
         <button onclick="checkResidence()">التالي</button>
       </div>
 
+      <!-- الخطوة التوضيحية الجديدة: عقد العمل -->
+      <div class="step" id="stepContract">
+        <label>هل عقد العمل الخاص بك دائم (غير محدد بمدة)؟</label>
+
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="contractStatus" value="permanent">
+            نعم، عقد عمل دائم
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="contractStatus" value="temporary">
+            لا، عقد مؤقت / فترة تجريبية
+          </label>
+        </div>
+
+        <button onclick="checkContract()">التالي</button>
+        <button class="btn-secondary" onclick="goToStep(1)">رجوع</button>
+      </div>
+
       <!-- رسالة الرفض -->
       <div class="rejection" id="rejectionMessage">
-        عذراً، بناءً على وضعك الإقامي الحالي لا يمكن حساب الحد الأقصى للقرض. يرجى مراجعة البنك مباشرة لمزيد من التفاصيل.
+        عذراً، بناءً على الشروط الحالية لا يمكن حساب الحد الأقصى للقرض. يرجى مراجعة البنك مباشرة لمزيد من التفاصيل.
         <br><br>
         <button class="btn-secondary" onclick="restart()">البدء من جديد</button>
       </div>
@@ -243,7 +262,7 @@
         </div>
 
         <button onclick="goToStep3()">التالي</button>
-        <button class="btn-secondary" onclick="goToStep(1)">رجوع</button>
+        <button class="btn-secondary" onclick="goToStep('Contract')">رجوع</button>
       </div>
 
       <!-- الخطوة الثالثة: البيانات المالية -->
@@ -288,24 +307,25 @@
 
   <script>
 
-    function formatNumber(number) {
-      return new Intl.NumberFormat('de-DE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(number) + " يورو";
-    }
-
     function formatPlainNumber(number) {
       return Math.round(number).toString();
     }
 
-    function goToStep(stepNumber) {
+    function goToStep(stepIdentifier) {
       document.querySelectorAll('.step').forEach(function (el) {
         el.classList.remove('active');
       });
       document.getElementById('rejectionMessage').style.display = 'none';
       document.getElementById('result').style.display = 'none';
-      document.getElementById('step' + stepNumber).classList.add('active');
+      document.getElementById('step' + stepIdentifier).classList.add('active');
+    }
+
+    function rejectLoan() {
+      document.querySelectorAll('.step').forEach(function (el) {
+        el.classList.remove('active');
+      });
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('rejectionMessage').style.display = 'block';
     }
 
     function checkResidence() {
@@ -319,12 +339,24 @@
       const status = selected.value;
 
       if (status === "citizen" || status === "permanent") {
+        goToStep('Contract');
+      } else {
+        rejectLoan();
+      }
+    }
+
+    function checkContract() {
+      const selected = document.querySelector('input[name="contractStatus"]:checked');
+
+      if (!selected) {
+        alert("يرجى تحديد نوع عقد العمل.");
+        return;
+      }
+
+      if (selected.value === "permanent") {
         goToStep(2);
       } else {
-        document.querySelectorAll('.step').forEach(function (el) {
-          el.classList.remove('active');
-        });
-        document.getElementById('rejectionMessage').style.display = 'block';
+        rejectLoan();
       }
     }
 
@@ -377,6 +409,12 @@
 
       const totalIncome = incomeMale + incomeFemale;
 
+      // شرط الدخل الأدنى (أقل من 1800 يورو يؤدي للرفض)
+      if (totalIncome < 1800) {
+        rejectLoan();
+        return;
+      }
+
       const fixedAllowance = 950;
       const carAllowance = 250;
       const childAllowance = 50 * childrenCount;
@@ -386,8 +424,11 @@
       const totalDeductions = fixedAllowance + carAllowance + childAllowance + rent + spouseAllowance;
 
       let freeAmount = totalIncome - totalDeductions;
-      if (freeAmount < 0) {
-        freeAmount = 0;
+
+      // شرط المبلغ المتبقي (أقل من 100 يورو يؤدي للرفض)
+      if (freeAmount < 100) {
+        rejectLoan();
+        return;
       }
 
       const years = totalIncome < 3000 ? 8 : 10;
