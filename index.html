@@ -75,3 +75,369 @@
     }
 
     .radio-group {
+      margin-bottom: 18px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .radio-option input {
+      width: auto;
+      margin: 0;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      background: #1f4e79;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    button:hover {
+      background: #163a5c;
+    }
+
+    .btn-secondary {
+      background: #ddd;
+      color: #222;
+    }
+
+    .btn-secondary:hover {
+      background: #ccc;
+    }
+
+    .result {
+      display: none;
+      margin-top: 25px;
+      padding: 20px;
+      background: #eef6ff;
+      border-radius: 12px;
+    }
+
+    .result h2 {
+      margin-top: 0;
+      text-align: center;
+      color: #1f4e79;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #d8e5f2;
+    }
+
+    .result-row:last-child {
+      border-bottom: none;
+    }
+
+    .amount {
+      font-weight: bold;
+      color: #1f4e79;
+    }
+
+    .note {
+      text-align: center;
+      margin-top: 20px;
+      color: #777;
+      font-size: 13px;
+    }
+
+    .rejection {
+      display: none;
+      text-align: center;
+      padding: 25px;
+      background: #fdecea;
+      border-radius: 12px;
+      color: #a33;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 10px auto;
+        padding: 10px;
+      }
+
+      .calculator {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="calculator">
+
+      <h1>حاسبة أقصى مبلغ للقرض</h1>
+      <p class="description">
+        احسب أقصى مبلغ تقديري لقرض شخصي بناءً على وضعك الإقامي ودخلك
+      </p>
+
+      <!-- الخطوة الأولى: الإقامة -->
+      <div class="step active" id="step1">
+        <label>ما هو وضعك القانوني في ألمانيا؟</label>
+
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="residenceStatus" value="citizen">
+            الجنسية الألمانية
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="residenceStatus" value="permanent">
+            إقامة دائمة (غير محدودة)
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="residenceStatus" value="temporary">
+            إقامة مؤقتة (محدودة)
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="residenceStatus" value="subsidiary">
+            حماية فرعية
+          </label>
+        </div>
+
+        <button onclick="checkResidence()">التالي</button>
+      </div>
+
+      <!-- رسالة الرفض -->
+      <div class="rejection" id="rejectionMessage">
+        عذراً، بناءً على وضعك الإقامي الحالي لا يمكن حساب الحد الأقصى للقرض. يرجى مراجعة البنك مباشرة لمزيد من التفاصيل.
+        <br><br>
+        <button class="btn-secondary" onclick="restart()">البدء من جديد</button>
+      </div>
+
+      <!-- الخطوة الثانية: عدد مقدمي الطلب -->
+      <div class="step" id="step2">
+        <label>هل الطلب باسم شخص واحد أم شخصين؟</label>
+
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="applicantCount" value="one">
+            شخص واحد فقط (الزوجة لا تعمل أو غير مشمولة)
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="applicantCount" value="two">
+            شخصين (الزوجة تعمل وتشارك في الطلب)
+          </label>
+        </div>
+
+        <button onclick="goToStep3()">التالي</button>
+        <button class="btn-secondary" onclick="goToStep(1)">رجوع</button>
+      </div>
+
+      <!-- الخطوة الثالثة: البيانات المالية -->
+      <div class="step" id="step3">
+
+        <label for="incomeMale">صافي الدخل الشهري (الراتب من صاحب العمل)</label>
+        <input type="number" id="incomeMale" placeholder="مثال: 3000" min="0">
+
+        <div id="femaleIncomeBlock" style="display:none;">
+          <label for="incomeFemale">صافي دخل الزوجة الشهري</label>
+          <input type="number" id="incomeFemale" placeholder="مثال: 1500" min="0">
+        </div>
+
+        <label for="childrenCount">عدد الأطفال</label>
+        <input type="number" id="childrenCount" placeholder="مثال: 2" min="0" value="0">
+
+        <label for="rent">الإيجار الشهري شامل التدفئة والخدمات</label>
+        <input type="number" id="rent" placeholder="مثال: 800" min="0">
+
+        <button onclick="calculateMaxLoan()">احسب الحد الأقصى للقرض</button>
+        <button class="btn-secondary" onclick="goToStep(2)">رجوع</button>
+      </div>
+
+      <!-- النتيجة -->
+      <div class="result" id="result">
+
+        <h2>النتيجة التقديرية</h2>
+
+        <div class="result-row">
+          <span>إجمالي الدخل الشهري:</span>
+          <span class="amount" id="totalIncome">0</span>
+        </div>
+
+        <div class="result-row">
+          <span>إجمالي الخصومات الشهرية:</span>
+          <span class="amount" id="totalDeductions">0</span>
+        </div>
+
+        <div class="result-row">
+          <span>المبلغ المتاح شهرياً (القسط المسموح):</span>
+          <span class="amount" id="freeAmount">0</span>
+        </div>
+
+        <div class="result-row">
+          <span>مدة القرض المعتمدة في الحساب:</span>
+          <span class="amount" id="loanDuration">0</span>
+        </div>
+
+        <div class="result-row">
+          <span>نسبة الفائدة المعتمدة في الحساب:</span>
+          <span class="amount" id="interestUsed">0</span>
+        </div>
+
+        <div class="result-row">
+          <span>الحد الأقصى التقديري للقرض:</span>
+          <span class="amount" id="maxLoanAmount">0</span>
+        </div>
+
+        <button class="btn-secondary" onclick="restart()">حساب جديد</button>
+      </div>
+
+      <div class="note">
+        * هذه الحسبة تقريبية فقط ولا تعتبر عرضاً رسمياً أو ضماناً للحصول على القرض. القرار النهائي يعود دائماً للبنك.
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+
+    function formatNumber(number) {
+      return new Intl.NumberFormat('de-DE', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(number) + " يورو";
+    }
+
+    function goToStep(stepNumber) {
+      document.querySelectorAll('.step').forEach(function (el) {
+        el.classList.remove('active');
+      });
+      document.getElementById('rejectionMessage').style.display = 'none';
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('step' + stepNumber).classList.add('active');
+    }
+
+    function checkResidence() {
+      const selected = document.querySelector('input[name="residenceStatus"]:checked');
+
+      if (!selected) {
+        alert("يرجى اختيار وضعك القانوني في ألمانيا.");
+        return;
+      }
+
+      const status = selected.value;
+
+      if (status === "citizen" || status === "permanent") {
+        goToStep(2);
+      } else {
+        document.querySelectorAll('.step').forEach(function (el) {
+          el.classList.remove('active');
+        });
+        document.getElementById('rejectionMessage').style.display = 'block';
+      }
+    }
+
+    function goToStep3() {
+      const selected = document.querySelector('input[name="applicantCount"]:checked');
+
+      if (!selected) {
+        alert("يرجى اختيار عدد مقدمي الطلب.");
+        return;
+      }
+
+      if (selected.value === "two") {
+        document.getElementById('femaleIncomeBlock').style.display = 'block';
+      } else {
+        document.getElementById('femaleIncomeBlock').style.display = 'none';
+      }
+
+      goToStep(3);
+    }
+
+    function restart() {
+      document.querySelectorAll('input[type=radio]').forEach(function (el) {
+        el.checked = false;
+      });
+      document.getElementById('incomeMale').value = '';
+      document.getElementById('incomeFemale').value = '';
+      document.getElementById('childrenCount').value = '0';
+      document.getElementById('rent').value = '';
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('rejectionMessage').style.display = 'none';
+      goToStep(1);
+    }
+
+    function calculateMaxLoan() {
+
+      const applicantType = document.querySelector('input[name="applicantCount"]:checked').value;
+
+      const incomeMale = parseFloat(document.getElementById("incomeMale").value) || 0;
+      const incomeFemale = applicantType === "two"
+        ? (parseFloat(document.getElementById("incomeFemale").value) || 0)
+        : 0;
+
+      const childrenCount = parseFloat(document.getElementById("childrenCount").value) || 0;
+      const rent = parseFloat(document.getElementById("rent").value) || 0;
+
+      if (incomeMale <= 0) {
+        alert("يرجى إدخال صافي الدخل الشهري بشكل صحيح.");
+        return;
+      }
+
+      const totalIncome = incomeMale + incomeFemale;
+
+      const fixedAllowance = 950;
+      const carAllowance = 250;
+      const childAllowance = 50 * childrenCount;
+
+      const spouseAllowance = (applicantType === "one") ? 200 : 0;
+
+      const totalDeductions = fixedAllowance + carAllowance + childAllowance + rent + spouseAllowance;
+
+      let freeAmount = totalIncome - totalDeductions;
+      if (freeAmount < 0) {
+        freeAmount = 0;
+      }
+
+      const years = totalIncome < 3000 ? 8 : 10;
+      const months = years * 12;
+
+      const annualRate = 9;
+      const monthlyRate = annualRate / 100 / 12;
+
+      let maxLoan = 0;
+      if (monthlyRate === 0) {
+        maxLoan = freeAmount * months;
+      } else {
+        maxLoan = freeAmount *
+          (Math.pow(1 + monthlyRate, months) - 1) /
+          (monthlyRate * Math.pow(1 + monthlyRate, months));
+      }
+
+      document.getElementById("totalIncome").textContent = formatNumber(totalIncome);
+      document.getElementById("totalDeductions").textContent = formatNumber(totalDeductions);
+      document.getElementById("freeAmount").textContent = formatNumber(freeAmount);
+      document.getElementById("loanDuration").textContent = years + " سنوات";
+      document.getElementById("interestUsed").textContent = annualRate + "%";
+      document.getElementById("maxLoanAmount").textContent = formatNumber(maxLoan);
+
+      document.getElementById("result").style.display = "block";
+    }
+
+  </script>
+
+</body>
+</html>
