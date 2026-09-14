@@ -398,7 +398,6 @@
         applicantBlock.style.display = 'block';
       } else {
         applicantBlock.style.display = 'none';
-        // إلغاء تحديد الخيارات عند التحويل للأعزب
         document.querySelectorAll('input[name="applicantCount"]').forEach(el => el.checked = false);
       }
     }
@@ -463,19 +462,21 @@
         return;
       }
 
-      const totalIncome = incomeMale + incomeFemale;
+      // يجب أن يكون راتب أحد المتقدمين على الأقل 1800 يورو أو أكثر
+      const hasMinimumSingleIncome = (incomeMale >= 1800) || (applicantType === "two" && incomeFemale >= 1800);
 
-      if (totalIncome < 1800) {
+      if (!hasMinimumSingleIncome) {
         rejectLoan();
         return;
       }
+
+      const totalIncome = incomeMale + incomeFemale;
 
       const fixedAllowance = 950;
       const carAllowance = 250;
       const childAllowance = 50 * childrenCount;
 
-      // الخصم للزوجة يكون 250 يورو فقط إذا كان المتقدم متزوجاً
-      const spouseAllowance = (maritalStatus === "married") ? 250 : 0;
+      const spouseAllowance = (maritalStatus === "married") ? 200 : 0;
 
       const totalDeductions = fixedAllowance + carAllowance + childAllowance + rent + spouseAllowance;
 
@@ -516,7 +517,6 @@
 
       document.getElementById("maxLoanRange").textContent = resultText;
 
-      // إعداد رابط الواتساب
       const phone = "4915565150411";
       const message = encodeURIComponent(`مرحباً أستاذ محمد اندرون، قمت بحساب مبلغ القرض المتوقع عبر الحاسبة وكانت النتيجة التقديرية (${resultText}). أود تحديد موعد استشارة معكم.`);
       
