@@ -405,11 +405,18 @@
           (monthlyRate * Math.pow(1 + monthlyRate, months));
       }
 
+      // الحد الأقصى المطلق للقرض الشخصي هو 75 ألف يورو
+      const absoluteMaxLoan = 75000;
+      if (maxLoan > absoluteMaxLoan) {
+        maxLoan = absoluteMaxLoan;
+      }
+
       // تقريب الحد الأقصى لأقرب ألف، ثم عرضه كنطاق (-٥٠٠٠ / +٥٠٠٠)
       const roundedLoan = Math.round(maxLoan / 1000) * 1000;
       let lowerBound = roundedLoan - 5000;
       let upperBound = roundedLoan + 5000;
       if (lowerBound < 0) lowerBound = 0;
+      if (upperBound > absoluteMaxLoan) upperBound = absoluteMaxLoan;
 
       document.getElementById("maxLoanRange").textContent =
         "بين " + formatPlainNumber(lowerBound) + " و " + formatPlainNumber(upperBound) + " يورو";
