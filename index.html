@@ -94,7 +94,7 @@
       margin: 0;
     }
 
-    button {
+    button, .btn-whatsapp {
       width: 100%;
       padding: 15px;
       border: none;
@@ -105,10 +105,22 @@
       font-weight: bold;
       cursor: pointer;
       margin-bottom: 10px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      box-sizing: border-box;
     }
 
     button:hover {
       background: #163a5c;
+    }
+
+    .btn-whatsapp {
+      background: #25d366;
+    }
+
+    .btn-whatsapp:hover {
+      background: #1ebc57;
     }
 
     .btn-secondary {
@@ -220,7 +232,7 @@
         <button onclick="checkResidence()">التالي</button>
       </div>
 
-      <!-- الخطوة التوضيحية الجديدة: عقد العمل -->
+      <!-- الخطوة: عقد العمل -->
       <div class="step" id="stepContract">
         <label>هل عقد العمل الخاص بك دائم (غير محدد بمدة)؟</label>
 
@@ -294,6 +306,11 @@
         <div class="result-row" style="justify-content:center; border-bottom:none;">
           <span class="amount" id="maxLoanRange" style="font-size:24px;">0</span>
         </div>
+
+        <!-- زر الواتساب للإستشارة -->
+        <a id="whatsappBtn" href="#" target="_blank" class="btn-whatsapp">
+          إرسال رسالة على واتساب لتحديد استشارة مع محمد اندرون
+        </a>
 
         <button class="btn-secondary" onclick="restart()">حساب جديد</button>
       </div>
@@ -409,7 +426,6 @@
 
       const totalIncome = incomeMale + incomeFemale;
 
-      // شرط الدخل الأدنى (أقل من 1800 يورو يؤدي للرفض)
       if (totalIncome < 1800) {
         rejectLoan();
         return;
@@ -425,7 +441,6 @@
 
       let freeAmount = totalIncome - totalDeductions;
 
-      // شرط المبلغ المتبقي (أقل من 100 يورو يؤدي للرفض)
       if (freeAmount < 100) {
         rejectLoan();
         return;
@@ -446,21 +461,26 @@
           (monthlyRate * Math.pow(1 + monthlyRate, months));
       }
 
-      // الحد الأقصى المطلق للقرض الشخصي هو 80 ألف يورو
       const absoluteMaxLoan = 80000;
       if (maxLoan > absoluteMaxLoan) {
         maxLoan = absoluteMaxLoan;
       }
 
-      // تقريب الحد الأقصى لأقرب ألف، ثم عرضه كنطاق (-٥٠٠٠ / +٥٠٠٠)
       const roundedLoan = Math.round(maxLoan / 1000) * 1000;
       let lowerBound = roundedLoan - 5000;
       let upperBound = roundedLoan + 5000;
       if (lowerBound < 0) lowerBound = 0;
       if (upperBound > absoluteMaxLoan) upperBound = absoluteMaxLoan;
 
-      document.getElementById("maxLoanRange").textContent =
-        "بين " + formatPlainNumber(lowerBound) + " و " + formatPlainNumber(upperBound) + " يورو";
+      const resultText = "بين " + formatPlainNumber(lowerBound) + " و " + formatPlainNumber(upperBound) + " يورو";
+
+      document.getElementById("maxLoanRange").textContent = resultText;
+
+      // إعداد رابط الواتساب ورسالة مجهزة مسبقاً
+      const phone = "4915565150411";
+      const message = encodeURIComponent(`مرحباً أستاذ محمد اندرون، قمت بحساب مبلغ القرض المتوقع عبر الحاسبة وكانت النتيجة التقديرية (${resultText}). أود تحديد موعد استشارة معكم.`);
+      
+      document.getElementById("whatsappBtn").href = `https://wa.me/${phone}?text=${message}`;
 
       document.getElementById("result").style.display = "block";
     }
