@@ -58,6 +58,26 @@
       font-weight: bold;
     }
 
+    .input-wrapper {
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    .input-wrapper input {
+      margin-bottom: 0;
+      padding-left: 35px;
+    }
+
+    .currency-symbol {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #777;
+      font-weight: bold;
+      pointer-events: none;
+    }
+
     input, select {
       width: 100%;
       padding: 14px;
@@ -294,18 +314,27 @@
       <div class="step" id="step3">
 
         <label for="incomeMale">صافي الدخل الشهري (الراتب من صاحب العمل)</label>
-        <input type="number" id="incomeMale" placeholder="مثال: 3000" min="0">
+        <div class="input-wrapper">
+          <input type="number" id="incomeMale" placeholder="مثال: 3000" min="0">
+          <span class="currency-symbol">€</span>
+        </div>
 
         <div id="femaleIncomeBlock" style="display:none;">
           <label for="incomeFemale">صافي دخل الزوجة الشهري</label>
-          <input type="number" id="incomeFemale" placeholder="مثال: 1500" min="0">
+          <div class="input-wrapper">
+            <input type="number" id="incomeFemale" placeholder="مثال: 1500" min="0">
+            <span class="currency-symbol">€</span>
+          </div>
         </div>
 
         <label for="childrenCount">عدد الأطفال</label>
         <input type="number" id="childrenCount" placeholder="مثال: 2" min="0" value="0">
 
         <label for="rent">الإيجار الشهري شامل التدفئة والخدمات</label>
-        <input type="number" id="rent" placeholder="مثال: 800" min="0">
+        <div class="input-wrapper">
+          <input type="number" id="rent" placeholder="مثال: 800" min="0">
+          <span class="currency-symbol">€</span>
+        </div>
 
         <button onclick="calculateMaxLoan()">احسب الحد الأقصى للقرض</button>
         <button class="btn-secondary" onclick="goToStep(2)">رجوع</button>
@@ -325,7 +354,9 @@
           إرسال رسالة على واتساب لتحديد استشارة مع محمد اندرون
         </a>
 
-        <button class="btn-secondary" onclick="restart()">حساب جديد</button>
+        <!-- زر التعديل السريع -->
+        <button class="btn-secondary" onclick="goToStep(3)">تعديل البيانات</button>
+        <button class="btn-secondary" style="background:none; border:none; color:#777; font-weight:normal;" onclick="restart()">البدء من جديد</button>
       </div>
 
       <div class="note">
@@ -445,6 +476,7 @@
 
     function calculateMaxLoan() {
 
+      const residenceText = document.querySelector('input[name="residenceStatus"]:checked')?.parentElement.textContent.trim() || "";
       const maritalStatus = document.querySelector('input[name="maritalStatus"]:checked').value;
       const applicantSelect = document.querySelector('input[name="applicantCount"]:checked');
       const applicantType = (maritalStatus === "married" && applicantSelect) ? applicantSelect.value : "one";
@@ -462,7 +494,7 @@
         return;
       }
 
-      // يجب أن يكون راتب أحد المتقدمين على الأقل 1800 يورو أو أكثر
+      // شرط الراتب الأدنى: يجب أن يكون راتب أحد المتقدمين 1800 يورو أو أكثر
       const hasMinimumSingleIncome = (incomeMale >= 1800) || (applicantType === "two" && incomeFemale >= 1800);
 
       if (!hasMinimumSingleIncome) {
@@ -472,16 +504,28 @@
 
       const totalIncome = incomeMale + incomeFemale;
 
+      // شرط الإيجار: إذا كان الإيجار يتجاوز 40% من صافي الدخل الإجمالي يُرفض الطلب
+      if (rent > (totalIncome * 0.40)) {
+        rejectLoan();
+        return;
+      }
+
       const fixedAllowance = 950;
       const carAllowance = 250;
       const childAllowance = 50 * childrenCount;
-
       const spouseAllowance = (maritalStatus === "married") ? 200 : 0;
 
       const totalDeductions = fixedAllowance + carAllowance + childAllowance + rent + spouseAllowance;
 
       let freeAmount = totalIncome - totalDeductions;
 
+      // تطبيق حد نسبة الدين إلى الدخل (DTI Limit): لا يتجاوز القسط 40% من الدخل
+      const maxMonthlyPaymentAllowed = totalIncome * 0.40;
+      if (freeAmount > maxMonthlyPaymentAllowed) {
+        freeAmount = maxMonthlyPaymentAllowed;
+      }
+
+      // شرط المتبقي: أقل من 100 يورو يؤدي للرفض
       if (freeAmount < 100) {
         rejectLoan();
         return;
@@ -517,10 +561,29 @@
 
       document.getElementById("maxLoanRange").textContent = resultText;
 
+      // صياغة رسالة الواتساب شاملة لكافة البيانات
       const phone = "4915565150411";
-      const message = encodeURIComponent(`مرحباً أستاذ محمد اندرون، قمت بحساب مبلغ القرض المتوقع عبر الحاسبة وكانت النتيجة التقديرية (${resultText}). أود تحديد موعد استشارة معكم.`);
+      const maritalText = (maritalStatus === "married") ? "متزوج" : "أعزب";
+      const applicantText = (applicantType === "two") ? "شخصين (مشارك)" : "شخص واحد";
       
-      document.getElementById("whatsappBtn").href = `https://wa.me/${phone}?text=${message}`;
+      let rawMessage = `مرحباً أستاذ محمد اندرون، قمت بحساب مبلغ القرض عبر الحاسبة وكانت البيانات كالتالي:\n\n` +
+        `- الإقامة: ${residenceText}\n` +
+        `- عقد العمل: دائم\n` +
+        `- الحالة الاجتماعية: ${maritalText}\n` +
+        `- عدد مقدمي الطلب: ${applicantText}\n` +
+        `- دخل الزوج: ${incomeMale}€\n`;
+      
+      if (applicantType === "two") {
+        rawMessage += `- دخل الزوجة: ${incomeFemale}€\n`;
+      }
+      
+      rawMessage += `- عدد الأطفال: ${childrenCount}\n` +
+        `- الإيجار الشهري: ${rent}€\n` +
+        `- النتيجة التقديرية للقرض: (${resultText})\n\n` +
+        `أود تحديد موعد استشارة معكم.`;
+
+      const encodedMessage = encodeURIComponent(rawMessage);
+      document.getElementById("whatsappBtn").href = `https://wa.me/${phone}?text=${encodedMessage}`;
 
       document.getElementById("result").style.display = "block";
     }
