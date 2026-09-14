@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>حاسبة أقصى مبلغ للقرض الشخصي</title>
   
-  <!-- خط Google Font الحديث -->
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 
   <style>
@@ -53,7 +52,6 @@
       margin-bottom: 24px;
     }
 
-    /* مؤشر التقدم */
     .progress-bar {
       display: flex;
       justify-content: space-between;
@@ -159,7 +157,6 @@
       box-shadow: 0 0 0 4px rgba(31, 78, 121, 0.1);
     }
 
-    /* خيارات الراديو المحسنة */
     .radio-group {
       display: flex;
       flex-direction: column;
@@ -198,7 +195,6 @@
       font-weight: bold;
     }
 
-    /* الأزرار */
     button, .btn-whatsapp {
       width: 100%;
       padding: 16px;
@@ -248,7 +244,6 @@
       box-shadow: none;
     }
 
-    /* النتيجة والرفض */
     .result {
       display: none;
       margin-top: 15px;
@@ -311,7 +306,6 @@
       <h1>حاسبة أقصى مبلغ للقرض</h1>
       <p class="description">تقدير أقصى مبلغ للقرض الشخصي في ألمانيا بخطوات بسيطة</p>
 
-      <!-- مؤشر الخريطة -->
       <div class="progress-bar" id="progressBar">
         <div class="progress-step active" id="p1">1</div>
         <div class="progress-step" id="pContract">2</div>
@@ -319,7 +313,7 @@
         <div class="progress-step" id="p3">4</div>
       </div>
 
-      <!-- الخطوة 1: الإقامة -->
+      <!-- الخطوة 1 -->
       <div class="step active" id="step1">
         <label>ما هو وضعك القانوني في ألمانيا؟</label>
 
@@ -345,7 +339,7 @@
         <button onclick="checkResidence()">التالي</button>
       </div>
 
-      <!-- الخطوة: عقد العمل -->
+      <!-- عقد العمل -->
       <div class="step" id="stepContract">
         <label>هل عقد العمل الخاص بك دائم (غير محدد بمدة)؟</label>
 
@@ -375,7 +369,7 @@
         <button class="btn-secondary" onclick="restart()">البدء من جديد</button>
       </div>
 
-      <!-- الخطوة 2: الحالة الاجتماعية -->
+      <!-- الخطوة 2 -->
       <div class="step" id="step2">
         <label>الحالة الاجتماعية</label>
         <div class="radio-group">
@@ -407,7 +401,7 @@
         <button class="btn-secondary" onclick="goToStep('Contract')">رجوع</button>
       </div>
 
-      <!-- الخطوة 3: البيانات المالية -->
+      <!-- الخطوة 3 -->
       <div class="step" id="step3">
 
         <label for="incomeMale">صافي الدخل الشهري (الراتب من صاحب العمل)</label>
@@ -459,7 +453,6 @@
   </div>
 
   <script>
-    // إضافة تظليل تلقائي للخيارات المختارة لتأثير visual أجمّل
     document.querySelectorAll('.radio-option input').forEach(input => {
       input.addEventListener('change', function() {
         let name = this.name;
@@ -502,7 +495,8 @@
       updateProgress(stepIdentifier);
     }
 
-    function rejectLoan(reasonText) {
+    // تعديل صيغة رسالة الرفض بناءً على طلبك
+    function rejectLoan() {
       document.querySelectorAll('.step').forEach(function (el) {
         el.classList.remove('active');
       });
@@ -522,7 +516,6 @@
       const rent = document.getElementById("rent").value || "غير مدخل";
 
       let rawMessage = `مرحباً أستاذ محمد اندرون، قمت بحساب مبلغ القرض وتم رفض الطلب تلقائياً بناءً على الحسبة.\n\n` +
-        `سبب الرفض التقديري: ${reasonText}\n\n` +
         `البيانات المدخلة:\n` +
         `- الإقامة: ${residenceText}\n` +
         `- عقد العمل: ${contractText}\n` +
@@ -536,7 +529,7 @@
 
       rawMessage += `- عدد الأطفال: ${childrenCount}\n` +
         `- الإيجار الشهري: ${rent}€\n\n` +
-        `أود الاستفسار عن سبب الرفض وإمكانية دراسة الحالة لاستثناء بنكي.`;
+        `أود الاستفسار عن سبب الرفض.`;
 
       document.getElementById("rejectionWhatsappBtn").href = `https://wa.me/${phone}?text=${encodeURIComponent(rawMessage)}`;
       document.getElementById('rejectionMessage').style.display = 'block';
@@ -551,7 +544,7 @@
       if (selected.value === "citizen" || selected.value === "permanent") {
         goToStep('Contract');
       } else {
-        rejectLoan("نوع الإقامة مؤقتة أو غير دائمة");
+        rejectLoan();
       }
     }
 
@@ -564,7 +557,7 @@
       if (selected.value === "permanent") {
         goToStep(2);
       } else {
-        rejectLoan("عقد العمل مؤقت / في فترة التجربة");
+        rejectLoan();
       }
     }
 
@@ -641,18 +634,16 @@
         return;
       }
 
-      // شرط الراتب الأدنى
       const hasMinimumSingleIncome = (incomeMale >= 1800) || (applicantType === "two" && incomeFemale >= 1800);
       if (!hasMinimumSingleIncome) {
-        rejectLoan("صافي الدخل لأحد المتقدمين أقل من الحد الأدنى (1800 يورو)");
+        rejectLoan();
         return;
       }
 
       const totalIncome = incomeMale + incomeFemale;
 
-      // شرط الإيجار (أقل من 40%)
       if (rent > (totalIncome * 0.40)) {
-        rejectLoan("قيمة الإيجار تزيد عن 40% من صافي الدخل الإجمالي");
+        rejectLoan();
         return;
       }
 
@@ -664,14 +655,13 @@
       const totalDeductions = fixedAllowance + carAllowance + childAllowance + rent + spouseAllowance;
       let freeAmount = totalIncome - totalDeductions;
 
-      // حد الدين إلى الدخل (25%)
       const maxMonthlyPaymentAllowed = totalIncome * 0.25;
       if (freeAmount > maxMonthlyPaymentAllowed) {
         freeAmount = maxMonthlyPaymentAllowed;
       }
 
       if (freeAmount < 100) {
-        rejectLoan("المبلغ المتبقي المعيشي بعد الاقتطاعات والإيجار غير كافٍ (أقل من 100 يورو)");
+        rejectLoan();
         return;
       }
 
