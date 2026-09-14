@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>حاسبة أقصى مبلغ للقرض الشخصي</title>
-  
+
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 
   <style>
@@ -295,10 +295,64 @@
       font-size: 12px;
       line-height: 1.4;
     }
+
+    /* ===== بانر فتح المتصفح الخارجي ===== */
+    #openExternalBanner {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 9999;
+      background: #1f4e79;
+      color: #fff;
+      padding: 14px 18px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    #openExternalBanner.show {
+      display: block;
+    }
+
+    #openExternalBanner p {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.6;
+    }
+
+    #openExternalBanner .banner-btn {
+      display: inline-block;
+      background: #ffffff;
+      color: #1f4e79;
+      font-weight: 700;
+      padding: 10px 22px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    #openExternalBanner .banner-note {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #cfe0f0;
+      font-weight: 400;
+    }
+
+    body.has-banner {
+      padding-top: 90px;
+    }
   </style>
 </head>
 
 <body>
+
+  <!-- بانر يظهر فقط إذا فتح المستخدم الصفحة من داخل تطبيق (تيك توك، إنستقرام...) -->
+  <div id="openExternalBanner">
+    <p id="bannerText">لتجربة أفضل، افتح الصفحة في متصفحك</p>
+    <a href="#" id="bannerBtn" class="banner-btn">فتح في المتصفح</a>
+  </div>
 
   <div class="container">
     <div class="calculator">
@@ -361,11 +415,11 @@
       <!-- رسالة الرفض -->
       <div class="rejection" id="rejectionMessage">
         <p>عذراً، بناءً على الشروط المعيارية الحالية لا يمكن حساب مبلغ للقرض.</p>
-        
+
         <a id="rejectionWhatsappBtn" href="#" target="_blank" class="btn-whatsapp">
           التواصل عبر واتساب لمعرفة السبب ودراسة الحالة
         </a>
-        
+
         <button class="btn-secondary" onclick="restart()">البدء من جديد</button>
       </div>
 
@@ -453,6 +507,63 @@
   </div>
 
   <script>
+    /* ========================================================
+       سكربت فتح الصفحة في متصفح خارجي (خروج من متصفح تيك توك/
+       إنستقرام/فيسبوك الداخلي) — يعمل بشكل مستقل عن باقي الكود
+       ======================================================== */
+    (function () {
+      var ua = navigator.userAgent || navigator.vendor || window.opera || "";
+
+      // اكتشاف المتصفحات الداخلية للتطبيقات الشائعة
+      var isInApp = /TikTok|musical_ly|BytedanceWebview|FBAN|FBAV|FB_IAB|Instagram|Line\//i.test(ua);
+
+      if (!isInApp) return; // مستخدم عادي في كروم أو سفاري، لا داعي لأي شيء
+
+      var isAndroid = /android/i.test(ua);
+      var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+      var currentUrl = window.location.href;
+
+      var banner = document.getElementById('openExternalBanner');
+      var bannerBtn = document.getElementById('bannerBtn');
+      var bannerText = document.getElementById('bannerText');
+      bannerBtn.href = currentUrl;
+
+      function showBanner(customText) {
+        if (customText) bannerText.textContent = customText;
+        banner.classList.add('show');
+        document.body.classList.add('has-banner');
+      }
+
+      if (isAndroid) {
+        // محاولة فتح نفس الصفحة مباشرة في Chrome عبر intent
+        var cleanUrl = currentUrl.replace(/^https?:\/\//, '');
+        var intentUrl = "intent://" + cleanUrl + "#Intent;scheme=https;package=com.android.chrome;end";
+
+        bannerBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          window.location.href = intentUrl;
+          setTimeout(function () { window.location.href = currentUrl; }, 600);
+        });
+
+        // محاولة تلقائية فور تحميل الصفحة
+        window.location.href = intentUrl;
+        setTimeout(function () {
+          showBanner('إذا لم تفتح الصفحة تلقائيًا في كروم، اضغط الزر');
+        }, 1200);
+
+      } else if (isIOS) {
+        // آيفون: آبل تمنع التحويل الإجباري لسفاري من داخل الـ WebView،
+        // لذلك نعرض البانر مباشرة مع تعليمات واضحة
+        showBanner('لأفضل تجربة، افتح هذه الصفحة في Safari');
+        bannerText.insertAdjacentHTML('afterend',
+          '<div class="banner-note">اضغط (⋯) أو أيقونة المشاركة فوق يمين الشاشة، ثم اختر "Open in Safari"</div>'
+        );
+      } else {
+        // أي حالة أخرى داخل تطبيق: نعرض البانر كخيار احتياطي
+        showBanner('لأفضل تجربة، افتح هذه الصفحة في متصفحك');
+      }
+    })();
+
     document.querySelectorAll('.radio-option input').forEach(input => {
       input.addEventListener('change', function() {
         let name = this.name;
@@ -472,7 +583,7 @@
     function updateProgress(stepIdentifier) {
       const pSteps = ['1', 'Contract', '2', '3'];
       let currentIndex = pSteps.indexOf(stepIdentifier.toString());
-      
+
       pSteps.forEach((id, index) => {
         let el = document.getElementById('p' + id);
         if(el) {
@@ -501,7 +612,7 @@
         el.classList.remove('active');
       });
       document.getElementById('result').style.display = 'none';
-      
+
       const phone = "4915565150411";
       const residenceText = document.querySelector('input[name="residenceStatus"]:checked')?.parentElement.textContent.trim() || "غير محدد";
       const contractText = document.querySelector('input[name="contractStatus"]:checked')?.parentElement.textContent.trim() || "غير محدد";
@@ -564,7 +675,7 @@
     function toggleApplicantOptions() {
       const maritalStatus = document.querySelector('input[name="maritalStatus"]:checked');
       const applicantBlock = document.getElementById('applicantCountBlock');
-      
+
       if (maritalStatus && maritalStatus.value === 'married') {
         applicantBlock.style.display = 'block';
       } else {
@@ -697,7 +808,7 @@
       const phone = "4915565150411";
       const maritalText = (maritalStatus === "married") ? "متزوج" : "أعزب";
       const applicantText = (applicantType === "two") ? "شخصين (مشارك)" : "شخص واحد";
-      
+
       let rawMessage = `مرحباً أستاذ محمد اندرون، قمت بحساب مبلغ القرض عبر الحاسبة وكانت النتيجة التقديرية (${resultText}).\n\n` +
         `البيانات المدخلة:\n` +
         `- الإقامة: ${residenceText}\n` +
@@ -705,11 +816,11 @@
         `- الحالة الاجتماعية: ${maritalText}\n` +
         `- عدد مقدمي الطلب: ${applicantText}\n` +
         `- دخل الزوج: ${incomeMale}€\n`;
-      
+
       if (applicantType === "two") {
         rawMessage += `- دخل الزوجة: ${incomeFemale}€\n`;
       }
-      
+
       rawMessage += `- عدد الأطفال: ${childrenCount}\n` +
         `- الإيجار الشهري: ${rent}€\n\n` +
         `أود تحديد موعد استشارة معكم.`;
