@@ -381,7 +381,7 @@
       const carAllowance = 250;
       const childAllowance = 50 * childrenCount;
 
-      const spouseAllowance = (applicantType === "one") ? 200 : 0;
+      const spouseAllowance = 250;
 
       const totalDeductions = fixedAllowance + carAllowance + childAllowance + rent + spouseAllowance;
 
@@ -405,8 +405,8 @@
           (monthlyRate * Math.pow(1 + monthlyRate, months));
       }
 
-      // الحد الأقصى المطلق للقرض الشخصي هو 75 ألف يورو
-      const absoluteMaxLoan = 75000;
+      // الحد الأقصى المطلق للقرض الشخصي هو 80 ألف يورو
+      const absoluteMaxLoan = 80000;
       if (maxLoan > absoluteMaxLoan) {
         maxLoan = absoluteMaxLoan;
       }
