@@ -233,6 +233,9 @@
     var isAndroid = /android/i.test(ua);
     var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
 
+    // لو الجهاز مو موبايل (لابتوب/كمبيوتر)، تجاهل الفحص كله ولا تعرض أي بانر
+    if (!isAndroid && !isIOS) return;
+
     var knownAppNames = /TikTok|musical_ly|BytedanceWebview|Trill|FBAN|FBAV|FB_IAB|Instagram|Line\//i.test(ua);
 
     var isRealIOSSafari = isIOS && /Safari\//.test(ua) && /Version\//.test(ua)
